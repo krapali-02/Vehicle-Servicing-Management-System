@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - VCMS{% endblock %}
+
+{% block content %}
+<!-- Header Banner -->
+<div class="card border-0 bg-success text-white p-4 rounded-3 shadow-sm mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-shield-workspace me-2"></i>Service Advisor / Admin Dashboard</h2>
+            <p class="mb-0 opacity-75">Welcome back, <strong>{{ session.user_name }}</strong>! Workshop status, bookings overview, and mechanics management.</p>
+        </div>
+        <div>
+            <span class="badge bg-light text-success fs-6 px-3 py-2"><i class="bi bi-person-badge-fill me-1"></i>Role: Admin Advisor</span>
+        </div>
+    </div>
+</div>
+
+<!-- Metrics Overview Row 1 -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4 col-lg-2">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white border-start border-4 border-primary">
+            <h6 class="text-muted mb-1 small text-uppercase">Customers</h6>
+            <h3 class="fw-bold mb-0 text-primary">{{ total_customers }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white border-start border-4 border-secondary">
+            <h6 class="text-muted mb-1 small text-uppercase">Vehicles</h6>
+            <h3 class="fw-bold mb-0 text-dark">{{ total_vehicles }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white border-start border-4 border-info">
+            <h6 class="text-muted mb-1 small text-uppercase">Total Bookings</h6>
+            <h3 class="fw-bold mb-0 text-info">{{ total_bookings }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white border-start border-4 border-primary">
+            <h6 class="text-muted mb-1 small text-uppercase">Pending</h6>
+            <h3 class="fw-bold mb-0 text-primary">{{ pending_bookings }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white border-start border-4 border-warning">
+            <h6 class="text-muted mb-1 small text-uppercase">Active Service</h6>
+            <h3 class="fw-bold mb-0 text-warning">{{ active_services }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white border-start border-4 border-success">
+            <h6 class="text-muted mb-1 small text-uppercase">Completed</h6>
+            <h3 class="fw-bold mb-0 text-success">{{ completed_services }}</h3>
+        </div>
+    </div>
+</div>
+
+<!-- All Service Bookings Table -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0"><i class="bi bi-list-task text-success me-2"></i>All Service Bookings</h5>
+        <a href="{{ url_for('admin_mechanics') }}" class="btn btn-outline-success btn-sm fw-bold">
+            <i class="bi bi-people-fill me-1"></i> Manage Mechanics
+        </a>
+    </div>
+    <div class="card-body p-0">
+        {% if bookings %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Customer Name</th>
+                            <th>Vehicle Registration</th>
+                            <th>Vehicle Model</th>
+                            <th>Service Type</th>
+                            <th>Booking Date</th>
+                            <th>Status</th>
+                            <th>Assigned Mechanic</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in bookings %}
+                            <tr>
+                                <td><strong class="text-primary">#{{ b.id }}</strong></td>
+                                <td><span class="fw-semibold">{{ b.customer.name }}</span></td>
+                                <td><span class="badge bg-secondary">{{ b.vehicle.registration_no }}</span></td>
+                                <td>{{ b.vehicle.model }}</td>
+                                <td><span class="fw-semibold">{{ b.service_name }}</span></td>
+                                <td><i class="bi bi-calendar-event me-1 text-muted"></i>{{ b.booking_date }}</td>
+                                <td>
+                                    {% if b.status == 'Booked' %}
+                                        <span class="badge bg-primary px-3 py-2">Booked</span>
+                                    {% elif b.status == 'Mechanic Assigned' %}
+                                        <span class="badge bg-info text-dark px-3 py-2">Mechanic Assigned</span>
+                                    {% elif b.status == 'Under Service' %}
+                                        <span class="badge bg-warning text-dark px-3 py-2">Under Service</span>
+                                    {% elif b.status == 'Completed' %}
+                                        <span class="badge bg-success px-3 py-2">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary px-3 py-2">{{ b.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if b.assigned_mechanic %}
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="bi bi-wrench me-1"></i>{{ b.assigned_mechanic.name }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted fst-italic">Not Assigned</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('admin_booking_detail', booking_id=b.id) }}" class="btn btn-outline-primary btn-sm fw-bold">
+                                        <i class="bi bi-eye me-1"></i> View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-3 text-muted opacity-50 mb-3"></i>
+                <h5 class="fw-bold">No Service Bookings Yet</h5>
+                <p class="text-muted mb-0">When customers request vehicle servicing, their bookings will appear here.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

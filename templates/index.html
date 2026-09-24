@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Vehicle Servicing Management System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-banner mb-5 text-center text-md-start">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="fw-bold mb-2"><i class="bi bi-gear-wide-connected me-2 text-warning"></i>Vehicle Servicing Management System</h1>
+            <p class="lead mb-4">A streamlined platform for managing vehicle service requests, mechanic assignments, service status tracking, and automated billing.</p>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="#" class="btn btn-warning btn-lg fw-bold px-4 shadow-sm"><i class="bi bi-box-arrow-in-right me-2"></i>Login to Portal</a>
+            </div>
+        </div>
+        <div class="col-md-4 text-center mt-4 mt-md-0">
+            <i class="bi bi-car-front-fill display-1 text-light opacity-75"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Core System Roles -->
+<div class="row g-4 mb-5">
+    <div class="col-md-12">
+        <h3 class="fw-bold border-start border-4 border-primary ps-3 mb-4">System User Roles</h3>
+    </div>
+    
+    <!-- Customer Role -->
+    <div class="col-md-4">
+        <div class="card h-100 feature-card shadow-sm border-0">
+            <div class="card-body p-4 text-center">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="bi bi-person-fill fs-2"></i>
+                </div>
+                <h4 class="card-title fw-bold">Customer</h4>
+                <p class="card-text text-muted">Register vehicles, book servicing slots, track live service status, and view final service invoices.</p>
+                <span class="badge bg-primary rounded-pill px-3 py-2">Customer Portal</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin / Service Advisor Role -->
+    <div class="col-md-4">
+        <div class="card h-100 feature-card shadow-sm border-0">
+            <div class="card-body p-4 text-center">
+                <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="bi bi-person-badge-fill fs-2"></i>
+                </div>
+                <h4 class="card-title fw-bold">Service Advisor</h4>
+                <p class="card-text text-muted">Manage service bookings, inspect customer vehicles, assign mechanics, and generate service bills.</p>
+                <span class="badge bg-success rounded-pill px-3 py-2">Admin Portal</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mechanic Role -->
+    <div class="col-md-4">
+        <div class="card h-100 feature-card shadow-sm border-0">
+            <div class="card-body p-4 text-center">
+                <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="bi bi-wrench-adjustable-circle-fill fs-2"></i>
+                </div>
+                <h4 class="card-title fw-bold">Mechanic</h4>
+                <p class="card-text text-muted">View assigned service tasks, update progress from 'Under Service' to 'Completed', and report status.</p>
+                <span class="badge bg-warning text-dark rounded-pill px-3 py-2">Mechanic Portal</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Workflow Overview -->
+<div class="card border-0 shadow-sm rounded-3 p-4 bg-white mb-4">
+    <h4 class="fw-bold mb-3"><i class="bi bi-diagram-3 me-2 text-primary"></i>Service Status Lifecycle</h4>
+    <div class="row text-center g-3">
+        <div class="col-6 col-md-3">
+            <div class="p-3 border rounded bg-light">
+                <span class="badge bg-secondary mb-2">Step 1</span>
+                <h6 class="fw-bold mb-0">Booked</h6>
+                <small class="text-muted">Customer submits request</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="p-3 border rounded bg-light">
+                <span class="badge bg-info text-dark mb-2">Step 2</span>
+                <h6 class="fw-bold mb-0">Mechanic Assigned</h6>
+                <small class="text-muted">Advisor delegates task</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="p-3 border rounded bg-light">
+                <span class="badge bg-warning text-dark mb-2">Step 3</span>
+                <h6 class="fw-bold mb-0">Under Service</h6>
+                <small class="text-muted">Mechanic services vehicle</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="p-3 border rounded bg-light">
+                <span class="badge bg-success mb-2">Step 4</span>
+                <h6 class="fw-bold mb-0">Completed</h6>
+                <small class="text-muted">Bill generated & ready</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

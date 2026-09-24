@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Vehicle Servicing Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Portal Login</h4>
+                <small class="text-white-50">Select or enter credentials to access your dashboard</small>
+            </div>
+            <div class="card-body p-4">
+                
+                <form action="{{ url_for('login') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-semibold">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label fw-semibold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm mb-3">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <!-- Quick Demo Login Helper for Viva / Demonstration -->
+                <div class="bg-light p-3 rounded border">
+                    <h6 class="fw-bold mb-2 text-secondary"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick Demo Auto-Fill Credentials:</h6>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm text-start" onclick="fillCredentials('customer@vcms.com', 'user123')">
+                            <i class="bi bi-person-fill me-1"></i> <strong>Customer:</strong> customer@vcms.com / user123
+                        </button>
+                        <button type="button" class="btn btn-outline-success btn-sm text-start" onclick="fillCredentials('admin@vcms.com', 'admin123')">
+                            <i class="bi bi-person-badge-fill me-1"></i> <strong>Admin:</strong> admin@vcms.com / admin123
+                        </button>
+                        <button type="button" class="btn btn-outline-warning text-dark btn-sm text-start" onclick="fillCredentials('mechanic@vcms.com', 'mech123')">
+                            <i class="bi bi-wrench-adjustable-circle-fill me-1"></i> <strong>Mechanic:</strong> mechanic@vcms.com / mech123
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function fillCredentials(email, password) {
+        document.getElementById('email').value = email;
+        document.getElementById('password').value = password;
+    }
+</script>
+{% endblock %}

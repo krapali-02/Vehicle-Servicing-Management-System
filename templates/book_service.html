@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Service - VCMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-warning text-dark py-3">
+                <h4 class="fw-bold mb-0"><i class="bi bi-calendar-plus-fill me-2"></i>Book Vehicle Service</h4>
+                <small class="text-dark-50">Select your registered vehicle and preferred servicing schedule</small>
+            </div>
+            <div class="card-body p-4">
+                {% if vehicles %}
+                    <form action="{{ url_for('book_service') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="vehicle_id" class="form-label fw-semibold">Select Vehicle</label>
+                            <select name="vehicle_id" id="vehicle_id" class="form-select" required>
+                                <option value="" disabled selected>-- Choose your vehicle --</option>
+                                {% for v in vehicles %}
+                                    <option value="{{ v.id }}">{{ v.model }} ({{ v.registration_no }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="service_name" class="form-label fw-semibold">Service Type</label>
+                            <select name="service_name" id="service_name" class="form-select" required>
+                                <option value="General Service" selected>General Service</option>
+                                <option value="Oil Change">Oil Change</option>
+                                <option value="Brake Service">Brake Service</option>
+                                <option value="AC Service">AC Service</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="booking_date" class="form-label fw-semibold">Preferred Service Date</label>
+                            <input type="date" name="booking_date" id="booking_date" class="form-control" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="remarks" class="form-label fw-semibold">Optional Remarks / Problem Description</label>
+                            <textarea name="remarks" id="remarks" rows="3" class="form-control" placeholder="Describe any issues or special requests (e.g., strange engine sound, brake noise)..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('customer_dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-warning text-dark fw-bold px-4 shadow-sm">
+                                <i class="bi bi-check-circle-fill me-1"></i> Confirm Booking
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-exclamation-triangle-fill display-3 text-warning mb-3"></i>
+                        <h4 class="fw-bold">No Vehicles Found!</h4>
+                        <p class="text-muted">You need to register at least one vehicle before booking a service slot.</p>
+                        <a href="{{ url_for('customer_vehicles') }}" class="btn btn-primary fw-bold">
+                            <i class="bi bi-plus-circle me-1"></i> Register a Vehicle Now
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Set minimum date for booking input to today
+    const dateInput = document.getElementById('booking_date');
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.min = today;
+        dateInput.value = today;
+    }
+</script>
+{% endblock %}
