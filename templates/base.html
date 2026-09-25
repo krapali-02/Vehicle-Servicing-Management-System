@@ -41,6 +41,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('customer_bookings') }}"><i class="bi bi-journal-check me-1"></i>My Bookings</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('customer_bills') }}"><i class="bi bi-receipt me-1"></i>My Bills</a>
+                            </li>
                         {% elif session.get('role') == 'Admin' %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('admin_dashboard') }}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
@@ -49,11 +52,14 @@
                                 <a class="nav-link" href="{{ url_for('admin_dashboard') }}"><i class="bi bi-list-task me-1"></i>Bookings</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin_bills') }}"><i class="bi bi-receipt-cutoff me-1"></i>Billing</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('admin_mechanics') }}"><i class="bi bi-people-fill me-1"></i>Mechanics</a>
                             </li>
                         {% elif session.get('role') == 'Mechanic' %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('mechanic_dashboard') }}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+                                <a class="nav-link" href="{{ url_for('mechanic_dashboard') }}"><i class="bi bi-card-checklist me-1"></i>My Assigned Jobs</a>
                             </li>
                         {% endif %}
                     {% endif %}

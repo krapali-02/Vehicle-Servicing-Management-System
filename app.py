@@ -77,11 +77,63 @@ def role_required(*allowed_roles):
         return decorated_function
     return decorator
 
+def get_current_mechanic():
+    user_id = session.get('user_id')
+    user_name = session.get('user_name')
+    if not user_id:
+        return None
+    mechanic = Mechanic.query.filter_by(user_id=user_id).first()
+    if not mechanic and user_name:
+        mechanic = Mechanic.query.filter_by(name=user_name).first()
+        if mechanic and not mechanic.user_id:
+            mechanic.user_id = user_id
+            db.session.commit()
+    return mechanic
+
 # --- ROUTES ---
 
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if 'user_id' in session:
+        user_role = session.get('role')
+        if user_role == 'Customer':
+            return redirect(url_for('customer_dashboard'))
+        elif user_role == 'Admin':
+            return redirect(url_for('admin_dashboard'))
+        elif user_role == 'Mechanic':
+            return redirect(url_for('mechanic_dashboard'))
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '').strip()
+
+        if not name or not email or not password:
+            flash('Please fill in all required fields.', 'danger')
+            return render_template('register.html')
+
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash('Email address is already registered. Please log in.', 'danger')
+            return redirect(url_for('login'))
+
+        new_user = User(
+            name=name,
+            email=email,
+            password=password,
+            role='Customer'
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash('Account registered successfully! Please log in with your credentials.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -95,7 +147,7 @@ def login():
             return redirect(url_for('mechanic_dashboard'))
 
     if request.method == 'POST':
-        email = request.form.get('email', '').strip()
+        email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '').strip()
 
         user = User.query.filter_by(email=email).first()
@@ -147,36 +199,39 @@ def customer_vehicles():
     vehicles = Vehicle.query.filter_by(customer_id=user_id).all()
     return render_template('vehicles.html', vehicles=vehicles)
 
-@app.route('/customer/vehicles/add', methods=['POST'])
+@app.route('/customer/vehicles/add', methods=['GET', 'POST'])
 @role_required('Customer')
 def add_vehicle():
     user_id = session['user_id']
-    reg_no = request.form.get('registration_no', '').strip().upper()
-    model = request.form.get('model', '').strip()
-    v_type = request.form.get('type', '').strip()
-    year = request.form.get('year', '').strip()
+    if request.method == 'POST':
+        reg_no = request.form.get('registration_no', '').strip().upper()
+        model = request.form.get('model', '').strip()
+        v_type = request.form.get('type', '').strip()
+        year = request.form.get('year', '').strip()
 
-    if not reg_no or not model:
-        flash('Registration number and model are required.', 'danger')
+        if not reg_no or not model:
+            flash('Registration number and model are required.', 'danger')
+            return redirect(url_for('add_vehicle'))
+
+        existing = Vehicle.query.filter_by(registration_no=reg_no).first()
+        if existing:
+            flash(f'Vehicle with registration number {reg_no} is already registered.', 'danger')
+            return redirect(url_for('add_vehicle'))
+
+        new_vehicle = Vehicle(
+            customer_id=user_id,
+            registration_no=reg_no,
+            model=model,
+            type=v_type,
+            year=year
+        )
+        db.session.add(new_vehicle)
+        db.session.commit()
+
+        flash(f'Vehicle {model} ({reg_no}) registered successfully!', 'success')
         return redirect(url_for('customer_vehicles'))
 
-    existing = Vehicle.query.filter_by(registration_no=reg_no).first()
-    if existing:
-        flash(f'Vehicle with registration number {reg_no} is already registered.', 'danger')
-        return redirect(url_for('customer_vehicles'))
-
-    new_vehicle = Vehicle(
-        customer_id=user_id,
-        registration_no=reg_no,
-        model=model,
-        type=v_type,
-        year=year
-    )
-    db.session.add(new_vehicle)
-    db.session.commit()
-
-    flash(f'Vehicle {model} ({reg_no}) registered successfully!', 'success')
-    return redirect(url_for('customer_vehicles'))
+    return render_template('add_vehicle.html')
 
 @app.route('/customer/vehicles/edit/<int:vehicle_id>', methods=['POST'])
 @role_required('Customer')
@@ -267,6 +322,14 @@ def customer_bookings():
     user_id = session['user_id']
     bookings = Booking.query.filter_by(customer_id=user_id).order_by(Booking.id.desc()).all()
     return render_template('customer_bookings.html', bookings=bookings)
+
+@app.route('/customer/bills')
+@role_required('Customer')
+def customer_bills():
+    user_id = session['user_id']
+    customer_bookings = Booking.query.filter_by(customer_id=user_id).all()
+    bills = [b.bill for b in customer_bookings if b.bill is not None]
+    return render_template('customer_bills.html', bills=bills)
 
 # --- ADMIN / SERVICE ADVISOR MODULE ---
 
@@ -359,12 +422,132 @@ def add_mechanic():
     flash(f'Mechanic {name} registered successfully!', 'success')
     return redirect(url_for('admin_mechanics'))
 
-# --- MECHANIC MODULE ---
+# --- ADMIN BILLING ROUTES ---
+
+@app.route('/admin/bills')
+@role_required('Admin')
+def admin_bills():
+    bills = Bill.query.order_by(Bill.id.desc()).all()
+    completed_bookings = Booking.query.filter_by(status='Completed').filter(~Booking.bill.has()).all()
+    
+    pending_bills_count = len([b for b in bills if b.payment_status == 'Pending'])
+    total_revenue = sum([b.total_amount for b in bills if b.payment_status == 'Paid'])
+
+    return render_template('admin_bills.html',
+                           bills=bills,
+                           completed_bookings=completed_bookings,
+                           pending_bills_count=pending_bills_count,
+                           total_revenue=total_revenue)
+
+@app.route('/admin/bills/create', methods=['POST'])
+@role_required('Admin')
+def create_bill():
+    booking_id = request.form.get('booking_id', type=int)
+    try:
+        service_charge = float(request.form.get('service_charge', 0))
+        extra_charge = float(request.form.get('extra_charge', 0))
+    except ValueError:
+        flash('Invalid charge amounts entered.', 'danger')
+        return redirect(url_for('admin_bills'))
+
+    payment_status = request.form.get('payment_status', 'Pending').strip()
+
+    booking = Booking.query.get(booking_id)
+    if not booking or booking.status != 'Completed':
+        flash('Cannot generate bill: Only completed service bookings are billable.', 'danger')
+        return redirect(url_for('admin_bills'))
+
+    existing_bill = Bill.query.filter_by(booking_id=booking_id).first()
+    if existing_bill:
+        flash(f'A bill has already been generated for Booking #{booking_id}.', 'danger')
+        return redirect(url_for('admin_bills'))
+
+    total_amount = service_charge + extra_charge
+
+    new_bill = Bill(
+        booking_id=booking_id,
+        service_charge=service_charge,
+        extra_charge=extra_charge,
+        total_amount=total_amount,
+        payment_status=payment_status
+    )
+    db.session.add(new_bill)
+    db.session.commit()
+
+    flash(f'Bill #BILL-{new_bill.id} generated for Booking #{booking_id} with Total: ₹{total_amount}.', 'success')
+    return redirect(url_for('admin_bills'))
+
+@app.route('/admin/bills/<int:bill_id>/update-status', methods=['POST'])
+@role_required('Admin')
+def update_payment_status(bill_id):
+    bill = Bill.query.get_or_404(bill_id)
+    new_payment_status = request.form.get('payment_status', 'Pending').strip()
+
+    if new_payment_status not in ['Pending', 'Paid']:
+        flash('Invalid payment status.', 'danger')
+        return redirect(url_for('admin_bills'))
+
+    bill.payment_status = new_payment_status
+    db.session.commit()
+
+    flash(f'Payment status for Bill #BILL-{bill.id} updated to "{new_payment_status}".', 'success')
+    return redirect(url_for('admin_bills'))
+
+# --- MECHANIC WORKBENCH MODULE ---
 
 @app.route('/mechanic/dashboard')
 @role_required('Mechanic')
 def mechanic_dashboard():
-    return render_template('mechanic_dashboard.html')
+    mechanic = get_current_mechanic()
+    if not mechanic:
+        bookings = []
+    else:
+        bookings = Booking.query.filter_by(mechanic_id=mechanic.id).order_by(Booking.id.desc()).all()
+
+    assigned_count = len(bookings)
+    active_count = len([b for b in bookings if b.status == 'Under Service'])
+    completed_count = len([b for b in bookings if b.status == 'Completed'])
+
+    return render_template('mechanic_dashboard.html',
+                           bookings=bookings,
+                           assigned_count=assigned_count,
+                           active_count=active_count,
+                           completed_count=completed_count)
+
+@app.route('/mechanic/jobs/<int:booking_id>')
+@role_required('Mechanic')
+def mechanic_job_detail(booking_id):
+    mechanic = get_current_mechanic()
+    booking = Booking.query.get_or_404(booking_id)
+
+    if not mechanic or booking.mechanic_id != mechanic.id:
+        flash('Access denied: You can only view jobs assigned directly to you.', 'danger')
+        return redirect(url_for('mechanic_dashboard'))
+
+    return render_template('mechanic_job_detail.html', booking=booking)
+
+@app.route('/mechanic/jobs/<int:booking_id>/update-status', methods=['POST'])
+@role_required('Mechanic')
+def mechanic_update_status(booking_id):
+    mechanic = get_current_mechanic()
+    booking = Booking.query.get_or_404(booking_id)
+
+    if not mechanic or booking.mechanic_id != mechanic.id:
+        flash('Access denied: You can only update jobs assigned directly to you.', 'danger')
+        return redirect(url_for('mechanic_dashboard'))
+
+    new_status = request.form.get('status', '').strip()
+    allowed_statuses = ['Mechanic Assigned', 'Under Service', 'Completed']
+
+    if new_status not in allowed_statuses:
+        flash('Invalid status selection for mechanic.', 'danger')
+        return redirect(url_for('mechanic_job_detail', booking_id=booking.id))
+
+    booking.status = new_status
+    db.session.commit()
+
+    flash(f'Job #{booking.id} status updated to "{new_status}" successfully.', 'success')
+    return redirect(url_for('mechanic_job_detail', booking_id=booking.id))
 
 if __name__ == '__main__':
     init_db()

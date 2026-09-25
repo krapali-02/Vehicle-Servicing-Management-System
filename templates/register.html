@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Vehicle Servicing Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-person-plus-fill me-2"></i>Create Customer Account</h4>
+                <small class="text-white-50">Register to book vehicle servicing and track live progress</small>
+            </div>
+            <div class="card-body p-4">
+                
+                <form action="{{ url_for('register') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label fw-semibold">Full Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="e.g. Rahul Sharma" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-semibold">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label fw-semibold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm mb-3">
+                        <i class="bi bi-check-circle-fill me-1"></i> Register Account
+                    </button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <p class="mb-0 text-muted">Already registered? <a href="{{ url_for('login') }}" class="fw-bold text-primary">Sign In here</a></p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

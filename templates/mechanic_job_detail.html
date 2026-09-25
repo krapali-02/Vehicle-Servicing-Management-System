@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Job #{{ booking.id }} Workbench - VCMS Mechanic{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-wrench-adjustable-circle-fill text-warning me-2"></i>Job #{{ booking.id }} Workbench</h2>
+        <p class="text-muted mb-0">Inspect vehicle service details and update repair progress.</p>
+    </div>
+    <a href="{{ url_for('mechanic_dashboard') }}" class="btn btn-outline-secondary fw-bold">
+        <i class="bi bi-arrow-left me-1"></i> Back to Workbench
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Job Summary -->
+    <div class="col-lg-7">
+        <!-- Customer & Vehicle Info -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+            <div class="card-header bg-dark text-white fw-bold py-3">
+                <i class="bi bi-car-front-fill me-2"></i>Vehicle & Owner Details
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Customer Name</small>
+                        <h6 class="fw-bold mb-0">{{ booking.customer.name }}</h6>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Vehicle Registration</small>
+                        <span class="badge bg-primary fs-6">{{ booking.vehicle.registration_no }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Vehicle Model</small>
+                        <h6 class="fw-bold mb-0">{{ booking.vehicle.model }} ({{ booking.vehicle.type }})</h6>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Year</small>
+                        <h6 class="fw-bold mb-0">{{ booking.vehicle.year or 'N/A' }}</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service & Customer Remarks Card -->
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-warning text-dark fw-bold py-3">
+                <i class="bi bi-tools me-2"></i>Service Requirements & Remarks
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Service Type</small>
+                        <h6 class="fw-bold text-primary mb-0">{{ booking.service_name }}</h6>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Scheduled Date</small>
+                        <h6 class="fw-bold mb-0"><i class="bi bi-calendar-event me-1 text-muted"></i>{{ booking.booking_date }}</h6>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-muted d-block">Customer Problem Remarks</small>
+                        <div class="p-3 bg-light rounded border mt-1">
+                            <p class="mb-0 text-dark">{{ booking.remarks or 'No special instructions provided by customer.' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Live Status & Mechanic Action -->
+    <div class="col-lg-5">
+        <!-- Current Status Badge -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4 text-center">
+            <div class="card-body p-4">
+                <small class="text-muted d-block mb-1">Current Work Progress</small>
+                {% if booking.status == 'Mechanic Assigned' %}
+                    <span class="badge bg-info text-dark fs-5 px-4 py-2 mb-2">Mechanic Assigned</span>
+                {% elif booking.status == 'Under Service' %}
+                    <span class="badge bg-warning text-dark fs-5 px-4 py-2 mb-2">Under Service</span>
+                {% elif booking.status == 'Completed' %}
+                    <span class="badge bg-success fs-5 px-4 py-2 mb-2">Completed</span>
+                {% else %}
+                    <span class="badge bg-secondary fs-5 px-4 py-2 mb-2">{{ booking.status }}</span>
+                {% endif %}
+                <p class="text-muted small mb-0">Assigned Technician: <strong>{{ session.user_name }}</strong></p>
+            </div>
+        </div>
+
+        <!-- Mechanic Status Update Form -->
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-dark text-white fw-bold py-3">
+                <i class="bi bi-arrow-repeat me-2"></i>Update Job Status
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('mechanic_update_status', booking_id=booking.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label for="status" class="form-label fw-semibold">Select Work Status</label>
+                        <select name="status" id="status" class="form-select" required>
+                            <option value="Mechanic Assigned" {% if booking.status == 'Mechanic Assigned' %}selected{% endif %}>Mechanic Assigned</option>
+                            <option value="Under Service" {% if booking.status == 'Under Service' %}selected{% endif %}>Under Service</option>
+                            <option value="Completed" {% if booking.status == 'Completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-warning text-dark fw-bold w-100 shadow-sm">
+                        <i class="bi bi-check-circle-fill me-1"></i> Update Progress Status
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
